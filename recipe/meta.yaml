@@ -1,6 +1,6 @@
 {% set name = "tinyarray" %}
-{% set version = "1.2.3" %}
-{% set sha256 = "47a06f801ed4b3d438f4f7098e244cd0c6d7db09428b1bc5ee813e52234dee9f" %}
+{% set version = "1.2.4" %}
+{% set sha256 = "ecd3428fd8a48b61fc5f0a413ede03e27db3a1dd53fcd49e24a36d11a8a29aba" %}
 
 package:
   name: {{ name|lower }}
@@ -10,8 +10,6 @@ source:
   fn: {{ name }}-{{ version }}.tar.gz
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: {{ sha256 }}
-  patches:
-   - windows_size.patch
 
 build:
   number: 0
