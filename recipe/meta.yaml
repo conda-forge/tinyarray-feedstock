@@ -14,7 +14,7 @@ source:
     - 0001-use-Py_ssize_t-everywhere.patch
 
 build:
-  number: 1
+  number: 2
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
 
 requirements:
