@@ -1,0 +1,30 @@
+From 261abf26fc86b2fdda04d903aad9d8e326e6b236 Mon Sep 17 00:00:00 2001
+From: Anton Akhmerov <anton.akhmerov@gmail.com>
+Date: Mon, 14 Apr 2025 10:11:07 +0200
+Subject: [PATCH] fix integer size on windows
+
+---
+ src/array.cc | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/array.cc b/src/array.cc
+index 3de04e7..5302699 100644
+--- a/src/array.cc
++++ b/src/array.cc
+@@ -19,7 +19,13 @@
+ #include "version.hh"
+ 
+ template <>
++#if NPY_DEFAULT_INT == NPY_INTP
++// With the default int in numpy >=2.0 is intp, use "n" for intp format.
++const char *Array<long>::pyformat = "n";
++#else
++// Older numpy on windows uses "l" format for backwards compatibility.
+ const char *Array<long>::pyformat = "l";
++#endif
+ template <>
+ const char *Array<double>::pyformat = "d";
+ template <>
+-- 
+2.47.0
+
