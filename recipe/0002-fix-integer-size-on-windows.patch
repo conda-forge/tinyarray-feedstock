@@ -1,4 +1,4 @@
-From 261abf26fc86b2fdda04d903aad9d8e326e6b236 Mon Sep 17 00:00:00 2001
+From d63b28027d8a0964f12ed059e57a3a4e2facbc05 Mon Sep 17 00:00:00 2001
 From: Anton Akhmerov <anton.akhmerov@gmail.com>
 Date: Mon, 14 Apr 2025 10:11:07 +0200
 Subject: [PATCH] fix integer size on windows
