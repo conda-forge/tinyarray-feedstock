@@ -12,7 +12,6 @@ source:
   sha256: {{ sha256 }}
   patches:
     - 0001-use-Py_ssize_t-everywhere.patch
-    - 0002-fix-integer-size-on-windows.patch
 
 build:
   # Skip windows build due to https://gitlab.kwant-project.org/kwant/tinyarray/-/issues/25
