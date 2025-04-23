@@ -15,6 +15,8 @@ source:
     - 0002-fix-integer-size-on-windows.patch
 
 build:
+  # Skip windows build due to https://gitlab.kwant-project.org/kwant/tinyarray/-/issues/25
+  skip: True  # [win]
   number: 4
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
 
