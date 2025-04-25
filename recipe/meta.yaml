@@ -12,11 +12,10 @@ source:
   sha256: {{ sha256 }}
   patches:
     - 0001-use-Py_ssize_t-everywhere.patch
+    - windows_numpy2_size.patch
 
 build:
-  # Skip windows build due to https://gitlab.kwant-project.org/kwant/tinyarray/-/issues/25
-  skip: True  # [win]
-  number: 4
+  number: 5
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
 
 requirements:
