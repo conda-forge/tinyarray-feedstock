@@ -12,6 +12,7 @@ source:
   sha256: {{ sha256 }}
   patches:
     - 0001-use-Py_ssize_t-everywhere.patch
+    - windows_numpy2_size.patch
 
 build:
   number: 5
