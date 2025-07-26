@@ -1,6 +1,6 @@
 {% set name = "tinyarray" %}
-{% set version = "1.2.4" %}
-{% set sha256 = "ecd3428fd8a48b61fc5f0a413ede03e27db3a1dd53fcd49e24a36d11a8a29aba" %}
+{% set version = "1.2.5" %}
+{% set sha256 = "5d47b3d475a30478ee72d6afe238c3d3683b3a3f9d425bb2f6384270b2c8799b" %}
 
 package:
   name: {{ name|lower }}
@@ -15,7 +15,7 @@ source:
     - windows_numpy2_size.patch
 
 build:
-  number: 5
+  number: 0
   script: {{ PYTHON }} -m pip install . --no-deps --ignore-installed --no-cache-dir -vvv
 
 requirements:
