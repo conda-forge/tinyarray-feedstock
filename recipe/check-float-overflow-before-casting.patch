@@ -1,0 +1,74 @@
+--- a/src/conversion.hh
++++ b/src/conversion.hh
+@@ -28,7 +28,9 @@
+     #define PyBytes_FromStringAndSize PyString_FromStringAndSize
+ #endif
+ 
++#include <cmath>
+ #include <complex>
++#include <limits>
+ typedef std::complex<double> Complex;
+ 
+ inline PyObject *pyobject_from_number(long x)
+@@ -178,21 +180,22 @@
+ inline Tdest _int_from_floatptr_exact(const void *data)
+ {
+     const Tsrc *ptr = reinterpret_cast<const Tsrc*>(data);
+-    Tdest result = static_cast<Tdest>(*ptr);
+-
+-    // Note: the > max and < min tests are unreliable since the floating point
+-    // representation of the maximal/minimal value may not be exact. The two
+-    // other tests catch these problems.  This approach looks flimsy and is
+-    // implementation-dependent, but it is tested rigourosly.
+-    if (*ptr > std::numeric_limits<Tdest>::max() ||
+-        *ptr < std::numeric_limits<Tdest>::min() ||
+-        (*ptr > 0 && result < 0) || (*ptr < 0 && result > 0)) {
++    // Check before casting: an out-of-range float-to-integer conversion is
++    // undefined, and ARM may saturate instead of changing the sign.  The
++    // exclusive upper bound is a power of two, exactly representable even
++    // when the largest integer is not.
++    const Tsrc upper = std::ldexp(Tsrc(1), std::numeric_limits<Tdest>::digits);
++    if (*ptr != *ptr) {
++        PyErr_SetString(PyExc_ValueError, "Cannot convert NaN to long");
++        return -1;
++    }
++    if (*ptr >= upper || *ptr < std::numeric_limits<Tdest>::min()) {
+         PyErr_Format(PyExc_OverflowError,
+                      "Float too large to be represented by long");
+         return -1;
+     } else
+     {
+-        return result;
++        return static_cast<Tdest>(*ptr);
+     }
+ }
+ 
+--- a/test_tinyarray.py
++++ b/test_tinyarray.py
+@@ -229,6 +229,26 @@
+                     ta.array(x, int)
+ 
+ 
++def test_float_buffer_integer_boundaries():
++    # Use Python integers as an independent oracle for the buffer conversion.
++    upper = 2 ** (sizeof_c_long * 8 - 1)
++    for dtype in [np.float32, np.float64, np.longdouble]:
++        bound = dtype(upper)
++        valid = [dtype(0), dtype(-0.0), dtype(1.75), dtype(-1.75),
++                 -bound, np.nextafter(bound, dtype(0)),
++                 np.nextafter(-bound, dtype(0))]
++        for value in valid:
++            assert ta.array(np.array(value), int) == int(value)
++            assert ta.array(np.array([value]), int) == [int(value)]
++        for value in [bound, np.nextafter(bound, dtype(np.inf)),
++                      np.nextafter(-bound, dtype(-np.inf)),
++                      dtype(np.inf), dtype(-np.inf)]:
++            raises(OverflowError, ta.array, np.array(value), int)
++            raises(OverflowError, ta.array, np.array([value]), int)
++        raises(ValueError, ta.array, np.array(dtype(np.nan)), int)
++        raises(ValueError, ta.array, np.array([dtype(np.nan)]), int)
++
++
+ def test_special_constructors():
+     for dtype in dtypes:
+         for shape in some_shapes:

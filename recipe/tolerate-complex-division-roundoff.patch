@@ -1,0 +1,66 @@
+--- a/test_tinyarray.py
++++ b/test_tinyarray.py
+@@ -14,7 +14,7 @@
+ import tinyarray as ta
+ from pytest import raises
+ import numpy as np
+-from numpy.testing import assert_equal, assert_almost_equal
++from numpy.testing import assert_equal, assert_almost_equal, assert_allclose
+ import sys
+ import ctypes
+ import random
+@@ -396,6 +396,12 @@
+             assert ta.array(a) + ta.array(b) == a + b
+ 
+ 
++def assert_complex_division_close(actual, expected):
++    # libc++ and NumPy use different complex division implementations.  On
++    # ARM, fused operations can leave roundoff even in z / z (about 3e-18).
++    assert_allclose(actual, expected, rtol=1e-15, atol=1e-15)
++
++
+ def test_binary_operators():
+     ops = operator
+     operations = [ops.add, ops.sub, ops.mul, ops.mod, ops.floordiv, ops.truediv]
+@@ -407,14 +413,17 @@
+ 
+         for op in operations:
+             for dtype in dtypes:
++                compare = (assert_complex_division_close
++                           if dtype is complex and op is ops.truediv
++                           else assert_equal)
+                 for shape in [(), 1, 3, (3, 2)]:
+                     if dtype is complex and op in [ops.mod, ops.floordiv]:
+                         continue
+                     a = make(shape, dtype)
+                     b = make(shape, dtype)
+-                    assert_equal(op(ta.array(a.tolist()), ta.array(b.tolist())),
+-                                 op(a, b))
+-                    assert_equal(op(ta.array(a), ta.array(b)), op(a, b))
++                    compare(op(ta.array(a.tolist()), ta.array(b.tolist())),
++                            op(a, b))
++                    compare(op(ta.array(a), ta.array(b)), op(a, b))
+ 
+ 
+ def test_binary_ufuncs():
+@@ -426,15 +435,17 @@
+             np_func = np.__dict__[name]
+             ta_func = ta.__dict__[name]
+             for dtype in dtypes:
++                compare = (assert_complex_division_close
++                           if dtype is complex and name == "divide"
++                           else assert_equal)
+                 for shape in [(), 1, 3, (3, 2)]:
+                     if dtype is complex and \
+                             name in ["remainder", "floor_divide"]:
+                         continue
+                     a = make(shape, dtype)
+                     b = make(shape, dtype)
+-                    assert_equal(ta_func(a.tolist(), b.tolist()),
+-                                 np_func(a, b))
+-                    assert_equal(ta_func(a, b), np_func(a, b))
++                    compare(ta_func(a.tolist(), b.tolist()), np_func(a, b))
++                    compare(ta_func(a, b), np_func(a, b))
+ 
+ 
+ def test_unary_operators():
